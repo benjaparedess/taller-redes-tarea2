@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  servidor:
+    build: ./servidor
+    container_name: mysql-servidor-container
+    environment:
+      MYSQL_ROOT_PASSWORD: taller123
+      MYSQL_DATABASE: taller_db
+      MYSQL_USER: alumno
+      MYSQL_PASSWORD: alumno123
+      MYSQL_ROOT_HOST: "%"
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cliente:
+    build: ./cliente
+    container_name: mysql-cliente-container
+    depends_on:
+      servidor:
+        condition: service_healthy
+    command: mysql -h servidor -u alumno -palumno123 taller_db --ssl-mode=DISABLED
+    stdin_open: true
+    tty: true
